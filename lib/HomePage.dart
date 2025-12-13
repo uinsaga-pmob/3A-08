@@ -3,15 +3,82 @@ import 'NonPopCoffee.dart';
 import 'PopCoffe.dart';
 import 'ProductPage.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final TextEditingController searchController = TextEditingController();
+  
+  // LIST FAVORIT GLOBAL DI HOMEPAGE
+List<Map<String, dynamic>> favorites = [];
+
+
+  // ================================
+  // LIST PRODUK (SUMBER SEARCH)
+  // ================================
+  final List<Map<String, dynamic>> allProducts = [
+    {
+      "img": "assets/images/coffee1.png",
+      "name": "Kopi Sruput 1",
+      "price": "6000",
+    },
+    {
+      "img": "assets/images/coffee2.png",
+      "name": "Kopi Sruput 2",
+      "price": "8000",
+    },
+    {
+      "img": "assets/images/coffee3.png",
+      "name": "Kopi Sruput 3",
+      "price": "10000",
+    },
+    {"img": "assets/images/matcha1.png", "name": "Green Tea", "price": "6000"},
+    {
+      "img": "assets/images/coklat1.png",
+      "name": "Choco Latte",
+      "price": "6000",
+    },
+  ];
+
+  List<Map<String, dynamic>> filteredProducts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    filteredProducts = List.from(allProducts);
+
+    searchController.addListener(() {
+      filterSearch(searchController.text);
+    });
+  }
+
+  void filterSearch(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filteredProducts = List.from(allProducts);
+      } else {
+        filteredProducts = allProducts
+            .where(
+              (item) =>
+                  item["name"].toLowerCase().contains(query.toLowerCase()),
+            )
+            .toList();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // BOTTOM NAV
+      // =========================
+      // BOTTOM NAV (tetap sama)
+      // =========================
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         height: 70,
@@ -24,28 +91,44 @@ class HomePage extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Icon(Icons.home, size: 28),
-            Icon(Icons.favorite_border, size: 28),
-            Icon(Icons.shopping_cart_outlined, size: 28),
-            Icon(Icons.person_outline, size: 28),
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, "/home"),
+              child: const Icon(Icons.home, size: 28),
+            ),
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, "/favorite"),
+              child: const Icon(Icons.favorite_border, size: 28),
+            ),
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, "/cart"),
+              child: const Icon(Icons.shopping_cart_outlined, size: 28),
+            ),
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, "/profile"),
+              child: const Icon(Icons.person_outline, size: 28),
+            ),
           ],
         ),
       ),
 
+      // =========================
+      //         BODY
+      // =========================
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADER
+            // =========================
+            // HEADER + SEARCH
+            // =========================
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
               decoration: const BoxDecoration(
                 color: Color(0xFFC7BA9D),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(30),
                 ),
               ),
               child: Column(
@@ -59,18 +142,18 @@ class HomePage extends StatelessWidget {
                     "Your Kopi Sruput",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                   ),
-
                   const SizedBox(height: 20),
 
-                  // SEARCH BAR
+                  // SEARCH BAR FIX
                   Container(
                     height: 45,
                     decoration: BoxDecoration(
                       color: const Color(0xFFE4DCC4),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const TextField(
-                      decoration: InputDecoration(
+                    child: TextField(
+                      controller: searchController,
+                      decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.search),
                         hintText: "Search",
                         border: InputBorder.none,
@@ -83,146 +166,143 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // CATEGORY BUTTONS
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  _categoryButton("Coffee", true),
-                  const SizedBox(width: 10),
-                  _categoryButton("Non Coffee", false),
-                ],
+            // ======================================
+            //   SEARCH RESULT (JIKA ADA QUERY)
+            // ======================================
+            if (searchController.text.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: filteredProducts.map((item) {
+                    return ListTile(
+                      leading: Image.asset(item["img"], width: 45),
+                      title: Text(item["name"]),
+                      trailing: Text(item["price"]),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ProductPage(
+                              img: item["img"],
+                              name: item["name"],
+                              price: int.parse(item["price"]),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
 
-            const SizedBox(height: 25),
-
-            // POPULAR COFFEE — FIXED
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Popular Coffee",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const PopularCoffeePage(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "See All",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+            // ======================================
+            //   SECTION ASLI (hanya tampil saat kosong)
+            // ======================================
+            if (searchController.text.isEmpty) ...[
+              // CATEGORY BUTTONS
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    _categoryButton("Coffee", true),
+                    const SizedBox(width: 10),
+                    _categoryButton("Non Coffee", false),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 15),
+              const SizedBox(height: 25),
 
-            // PRODUCT LIST 1
-            SizedBox(
-              height: 230,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 20),
-                children: [
-                  _productCard(
-                    context: context,
-                    img: "assets/images/coffee1.png",
-                    name: "Kopi Sruput 1",
-                    price: "6.000",
-                  ),
-                  _productCard(
-                    context: context,
-                    img: "assets/images/coffee2.png",
-                    name: "Kopi Sruput 2",
-                    price: "8.000",
-                  ),
-                  _productCard(
-                    context: context,
-                    img: "assets/images/coffee3.png",
-                    name: "Kopi Sruput 3",
-                    price: "10.000",
-                  ),
-                ],
+              // POPULAR COFFEE
+              _sectionTitle(
+                title: "Popular Coffee",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PopularCoffeePage()),
+                ),
               ),
-            ),
 
-            const SizedBox(height: 25),
+              const SizedBox(height: 15),
 
-            // POPULAR NON COFFEE
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Popular Non Coffee",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              // LIST PRODUCT 1
+              _horizontalList([
+                allProducts[0],
+                allProducts[1],
+                allProducts[2],
+              ], context),
+
+              const SizedBox(height: 25),
+
+              // POPULAR NON COFFEE
+              _sectionTitle(
+                title: "Popular Non Coffee",
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PopularNonCoffeePage(),
                   ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const PopularNonCoffeePage(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "See All",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: 15),
+              const SizedBox(height: 15),
 
-            // PRODUCT LIST 2
-            SizedBox(
-              height: 230,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 20),
-                children: [
-                  _productCard(
-                    context: context,
-                    img: "assets/images/matcha1.png",
-                    name: "Green Tea",
-                    price: "6.000",
-                  ),
-                  _productCard(
-                    context: context,
-                    img: "assets/images/coklat1.png",
-                    name: "Choco Latte",
-                    price: "6.000",
-                  ),
-                ],
-              ),
-            ),
+              _horizontalList([allProducts[3], allProducts[4]], context),
+            ],
           ],
         ),
       ),
     );
   }
 
-  // CATEGORY BUTTON
+  // ======================
+  // HELPER WIDGETS
+  // ======================
+
+  Widget _sectionTitle({required String title, required Function() onTap}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          InkWell(
+            onTap: onTap,
+            child: const Text(
+              "See All",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _horizontalList(
+    List<Map<String, dynamic>> items,
+    BuildContext context,
+  ) {
+    return SizedBox(
+      height: 230,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.only(left: 20),
+        itemCount: items.length,
+        itemBuilder: (_, i) {
+          var item = items[i];
+          return _productCard(
+            context: context,
+            img: item["img"],
+            name: item["name"],
+            price: item["price"],
+          );
+        },
+      ),
+    );
+  }
+
   Widget _categoryButton(String text, bool active) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
@@ -241,7 +321,6 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // PRODUCT CARD
   Widget _productCard({
     required BuildContext context,
     required String img,
@@ -253,11 +332,8 @@ class HomePage extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ProductPage(
-              img: img,
-              name: name,
-              price: int.parse(price.replaceAll('.', '')),
-            ),
+            builder: (_) =>
+                ProductPage(img: img, name: name, price: int.parse(price)),
           ),
         );
       },
@@ -296,7 +372,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
 
-            // FAVORITE BUTTON
             Positioned(
               top: 8,
               right: 8,
@@ -311,7 +386,6 @@ class HomePage extends StatelessWidget {
               ),
             ),
 
-            // ADD BUTTON
             Positioned(
               bottom: 12,
               right: 12,

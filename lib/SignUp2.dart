@@ -14,10 +14,7 @@ class SignUpStep2 extends StatelessWidget {
               const SizedBox(height: 40),
 
               Center(
-                child: Image.asset(
-                  "assets/images/kopilogo.png",
-                  height: 150,
-                ),
+                child: Image.asset("assets/images/kopilogo.png", height: 150),
               ),
 
               const SizedBox(height: 40),
@@ -26,10 +23,7 @@ class SignUpStep2 extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   "Sign Up",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
               ),
 
@@ -67,7 +61,7 @@ class SignUpStep2 extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                        Navigator.pushNamed(context, "/home");  
+                    Navigator.pushNamed(context, "/login");
                   },
                   child: const Text("Sign Up"),
                 ),

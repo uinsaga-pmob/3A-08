@@ -1,6 +1,9 @@
+import 'package:coffeshop/Profilepage.dart';
 import 'package:coffeshop/WelcomePage.dart';
+import 'package:coffeshop/cart.dart';
 import 'package:flutter/material.dart';
 
+import 'FavoritPage.dart';
 import 'HomePage.dart';
 import 'LoginPage.dart';
 import 'SignUp2.dart';
@@ -23,6 +26,9 @@ class MyApp extends StatelessWidget {
         "/login": (context) => const LoginPage(),
         "/signup": (context) => const SignUpStep2(),
         "/home": (context) => const HomePage(),
+        "/cart": (context) => const CartPage(),
+        "/favorit": (context) => const FavoritePage(favorites: []),
+        "/profile": (context) => const ProfilePage(),
       },
     );
   }

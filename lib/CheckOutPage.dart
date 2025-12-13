@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'SuccesPaymentPage.dart';
+
 class CheckoutPage extends StatefulWidget {
   final String name;
   final int price;
@@ -78,6 +80,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 }
 
                 print("Order success: meja ${tableController.text}");
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SuccessPaymentPage(),
+                  ),
+                );
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -88,6 +97,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   color: const Color(0xFFC8B89D),
                   borderRadius: BorderRadius.circular(18),
                 ),
+
                 child: const Text(
                   "Order Now",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

@@ -115,19 +115,19 @@ class PopularCoffeePage extends StatelessWidget {
 // DATA DUMMY
 List<Map<String, dynamic>> coffeeItems = [
   {
-    "image": "assets/images/kopi1.png",
+    "image": "assets/images/coffee1.png",
     "title": "Kopi Sruput",
     "subtitle": "Good Day Mocacinno",
     "price": "6.000"
   },
   {
-    "image": "assets/images/kopi2.png",
+    "image": "assets/images/coffee2.png",
     "title": "Kopi Sruput",
     "subtitle": "Nescafe Classic",
     "price": "6.000"
   },
   {
-    "image": "assets/images/kopi3.png",
+    "image": "assets/images/coffee3.png",
     "title": "Kopi Sruput",
     "subtitle": "ABC Kopi Susu",
     "price": "6.000"
