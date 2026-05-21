@@ -52,11 +52,16 @@ class LoginPage extends StatelessWidget {
 
               const SizedBox(height: 24),
 
+<<<<<<< HEAD
               // ======================
               // LOGIN FIELD
               // ======================
               _buildInputField("Login"),
 
+=======
+              // Input fields
+              _buildInputField("Email"),
+>>>>>>> b76c2bab9bed56e13967fba28559e5a0271d2960
               const SizedBox(height: 12),
 
               // ======================

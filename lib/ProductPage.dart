@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'CartModel.dart';
 import 'CheckOutPage.dart';
+import 'CartPage.dart';
 
 class ProductPage extends StatefulWidget {
   final String img;
@@ -25,6 +27,8 @@ class _ProductPageState extends State<ProductPage> {
   String availableIn = "Ice";
   String sugar = "Less";
   String serve = "Dine In";
+
+  get onTap => null;
 
   String formatRupiah(int value) {
     final f = NumberFormat('#,###', 'en_US');
@@ -55,7 +59,21 @@ class _ProductPageState extends State<ProductPage> {
             right: 16,
             child: IconButton(
               icon: const Icon(Icons.shopping_cart_outlined, size: 26),
-              onPressed: () {},
+              onPressed: () {
+                CartData.add(
+                  CartItem(
+                    img: widget.img,
+                    name: widget.name,
+                    price: widget.price,
+                    quantity: quantity,
+                  ),
+                );
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CartPage()),
+                );
+              },
             ),
           ),
 
@@ -259,14 +277,21 @@ class _ProductPageState extends State<ProductPage> {
                       // ORDER NOW BUTTON (FIX)
                       GestureDetector(
                         onTap: () {
+                          CartData.add(
+                            CartItem(
+                              img: widget.img,
+                              name: widget.name,
+                              price: widget.price,
+                              quantity: quantity,
+                            ),
+                          );
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => CheckoutPage(
+                              builder: (_) => CheckoutPage(
                                 name: widget.name,
-                                price: widget.price,
-                                quantity: quantity,
-                                img: widget.img,
+                                items: List.from(CartData.items),
                               ),
                             ),
                           );

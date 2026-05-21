@@ -59,8 +59,7 @@ class WelcomePage extends StatelessWidget {
 
                   const SizedBox(
                     height: 40,
-                  ), // **TURUNKAN TEKS MENDekati TOMBOL**
-
+                  ), 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

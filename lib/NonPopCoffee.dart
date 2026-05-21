@@ -21,10 +21,7 @@ class PopularNonCoffeePage extends StatelessWidget {
                   const Spacer(),
                   const Text(
                     "Popular Non Coffee",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
                   const SizedBox(width: 48),
@@ -59,26 +56,19 @@ class PopularNonCoffeePage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Center(
-                            child: Image.asset(
-                              item["image"],
-                              height: 110,
-                            ),
+                            child: Image.asset(item["image"], height: 110),
                           ),
 
                           const SizedBox(height: 10),
 
                           Text(
                             item["title"],
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
 
                           Text(
                             item["subtitle"],
-                            style: const TextStyle(
-                              fontSize: 12,
-                            ),
+                            style: const TextStyle(fontSize: 12),
                           ),
 
                           const Spacer(),
@@ -94,14 +84,14 @@ class PopularNonCoffeePage extends StatelessWidget {
                               ),
                               const Icon(Icons.add_circle_outline),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
                   );
                 },
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -114,24 +104,24 @@ List<Map<String, dynamic>> nonCoffeeItems = [
     "image": "assets/images/esteh.png",
     "title": "Sruput",
     "subtitle": "Es Teh",
-    "price": "6.000"
+    "price": "6.000",
   },
   {
-    "image": "assets/images/coklat.png",
+    "image": "assets/images/coklat1.png",
     "title": "Sruput",
     "subtitle": "Chocolatos",
-    "price": "6.000"
+    "price": "6.000",
   },
   {
-    "image": "assets/images/matcha.png",
+    "image": "assets/images/matcha1.png",
     "title": "Sruput",
     "subtitle": "Matcha",
-    "price": "6.000"
+    "price": "6.000",
   },
   {
     "image": "assets/images/nutrisari.png",
     "title": "Sruput",
     "subtitle": "Nutrisari",
-    "price": "6.000"
+    "price": "6.000",
   },
 ];

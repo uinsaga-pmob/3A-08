@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'HomePage.dart';
 
 class SuccessPaymentPage extends StatelessWidget {
   const SuccessPaymentPage({super.key});
@@ -7,17 +8,13 @@ class SuccessPaymentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFC7BA9D),
-
       body: Column(
         children: [
           const SizedBox(height: 80),
 
           const Text(
             "Thanks broo",
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
           ),
 
           const Spacer(),
@@ -39,11 +36,8 @@ class SuccessPaymentPage extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 const Text(
-                  "Thanks You For Purchasing",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  "Thank You For Purchasing",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
                   textAlign: TextAlign.center,
                 ),
 
@@ -57,7 +51,13 @@ class SuccessPaymentPage extends StatelessWidget {
                 const SizedBox(height: 28),
 
                 GestureDetector(
-                  onTap: () => Navigator.pop(context),
+                  onTap: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HomePage()),
+                      (route) => false,
+                    );
+                  },
                   child: Container(
                     height: 48,
                     decoration: BoxDecoration(
@@ -75,11 +75,9 @@ class SuccessPaymentPage extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 12),
               ],
             ),
-          )
+          ),
         ],
       ),
     );

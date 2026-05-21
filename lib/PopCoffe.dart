@@ -21,10 +21,7 @@ class PopularCoffeePage extends StatelessWidget {
                   const Spacer(),
                   const Text(
                     "Popular Coffee",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
                   const SizedBox(width: 48), // biar title tetap center
@@ -60,10 +57,7 @@ class PopularCoffeePage extends StatelessWidget {
                         children: [
                           // IMAGE
                           Center(
-                            child: Image.asset(
-                              item["image"],
-                              height: 110,
-                            ),
+                            child: Image.asset(item["image"], height: 110),
                           ),
 
                           const SizedBox(height: 10),
@@ -71,16 +65,12 @@ class PopularCoffeePage extends StatelessWidget {
                           // TITLE
                           Text(
                             item["title"],
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
 
                           Text(
                             item["subtitle"],
-                            style: const TextStyle(
-                              fontSize: 12,
-                            ),
+                            style: const TextStyle(fontSize: 12),
                           ),
 
                           const Spacer(),
@@ -97,14 +87,14 @@ class PopularCoffeePage extends StatelessWidget {
                               ),
                               const Icon(Icons.add_circle_outline),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
                   );
                 },
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -115,27 +105,27 @@ class PopularCoffeePage extends StatelessWidget {
 // DATA DUMMY
 List<Map<String, dynamic>> coffeeItems = [
   {
-    "image": "assets/images/kopi1.png",
+    "image": "assets/images/coffee1.png",
     "title": "Kopi Sruput",
     "subtitle": "Good Day Mocacinno",
-    "price": "6.000"
+    "price": "6.000",
   },
   {
-    "image": "assets/images/kopi2.png",
+    "image": "assets/images/coffee2.png",
     "title": "Kopi Sruput",
     "subtitle": "Nescafe Classic",
-    "price": "6.000"
+    "price": "6.000",
   },
   {
-    "image": "assets/images/kopi3.png",
+    "image": "assets/images/coffee3.png",
     "title": "Kopi Sruput",
     "subtitle": "ABC Kopi Susu",
-    "price": "6.000"
+    "price": "6.000",
   },
   {
-    "image": "assets/images/kopi4.png",
+    "image": "assets/images/coffee4.png",
     "title": "Kopi Sruput",
     "subtitle": "Good Day Mocaflo",
-    "price": "6.000"
+    "price": "6.000",
   },
 ];

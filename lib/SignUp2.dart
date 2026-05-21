@@ -29,7 +29,10 @@ class SignUpStep2 extends StatelessWidget {
 
                 child: Text(
                   "Sign Up",
+<<<<<<< HEAD
 
+=======
+>>>>>>> b76c2bab9bed56e13967fba28559e5a0271d2960
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -81,7 +84,11 @@ class SignUpStep2 extends StatelessWidget {
                   ),
 
                   onPressed: () {
+<<<<<<< HEAD
                     Navigator.pushReplacementNamed(context, "/login");
+=======
+                    Navigator.pushNamed(context, "/login");
+>>>>>>> b76c2bab9bed56e13967fba28559e5a0271d2960
                   },
 
                   child: const Text("Sign Up"),
