@@ -1,0 +1,6 @@
+{
+  "name": "Kopi Sruput",
+  "description": "Kopi Sruput - Coffee ordering app including interactive UI mockup and full downloadable Flutter/Dart project source code with SQFlite DatabaseHelper.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
