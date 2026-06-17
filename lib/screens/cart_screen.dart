@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/database_helper.dart';
 import 'checkout_screen.dart';
 import '../widgets/image_placeholder.dart';
@@ -7,13 +8,14 @@ class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
   @override
-  State<CartScreen> createState() => _CartScreenState();
+  CartScreenState createState() => CartScreenState();
 }
 
-class _CartScreenState extends State<CartScreen> {
+class CartScreenState extends State<CartScreen> {
   List<Map<String, dynamic>> _cartWithDetails = [];
   bool _isLoading = true;
   double _totalPrice = 0.0;
+  int? _userId;
 
   @override
   void initState() {
@@ -24,7 +26,17 @@ class _CartScreenState extends State<CartScreen> {
   void _loadCart() async {
     setState(() => _isLoading = true);
     try {
-      final list = await DatabaseHelper.instance.getCartWithDetails();
+      final prefs = await SharedPreferences.getInstance();
+      _userId = prefs.getInt('user_id');
+      if (_userId == null) {
+        setState(() {
+          _cartWithDetails = [];
+          _totalPrice = 0.0;
+        });
+        return;
+      }
+
+      final list = await DatabaseHelper.instance.getCartWithDetails(userId: _userId);
       double total = 0.0;
       for (var item in list) {
         final double price = (item['price'] as num).toDouble();
@@ -43,6 +55,10 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
+  void refreshCart() {
+    _loadCart();
+  }
+
   void _updateQty(int cartId, int currentQty, int delta) async {
     final newQty = currentQty + delta;
     await DatabaseHelper.instance.updateCartQuantity(cartId, newQty);
@@ -50,7 +66,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _clearCart() async {
-    await DatabaseHelper.instance.clearCart();
+    await DatabaseHelper.instance.clearCart(userId: _userId);
     _loadCart();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

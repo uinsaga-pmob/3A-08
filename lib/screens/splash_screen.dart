@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Spacer(),
-            const CupLogo(size: 110, color: Colors.amber),
+            const CupLogo(size: 90, color: Colors.amber),
             const SizedBox(height: 24),
             const Text(
               'Kopi Sruput',

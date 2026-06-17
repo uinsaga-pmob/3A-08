@@ -13,11 +13,12 @@ class MainNavigationShell extends StatefulWidget {
 
 class _MainNavigationShellState extends State<MainNavigationShell> {
   int _selectedIndex = 0;
+  final GlobalKey<CartScreenState> _cartKey = GlobalKey<CartScreenState>();
 
-  final List<Widget> _screens = [
+  late final List<Widget> _screens = [
     const HomeScreen(),
     const FavoriteScreen(),
-    const CartScreen(),
+    CartScreen(key: _cartKey),
     const ProfileScreen(),
   ];
 
@@ -34,6 +35,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
           setState(() {
             _selectedIndex = index;
           });
+          if (index == 2) {
+            _cartKey.currentState?.refreshCart();
+          }
         },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,

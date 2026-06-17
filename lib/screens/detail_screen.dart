@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/database_helper.dart';
 import '../models/menu_item.dart';
 import '../widgets/image_placeholder.dart';
@@ -33,13 +34,24 @@ class _DetailScreenState extends State<DetailScreen> {
 
   void _addToCart() async {
     try {
-      await DatabaseHelper.instance.addToCart({
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id');
+      if (userId == null) {
+        throw StateError('Pengguna belum masuk');
+      }
+
+      debugPrint('DetailScreen addToCart: user_id=$userId, menu_id=${widget.item.id}, quantity=$_quantity, temp=$_tempOption, sugar=$_sugarOption, dine=$_dineOption');
+      final result = await DatabaseHelper.instance.addToCart({
+        'user_id': userId,
         'menu_id': widget.item.id,
         'quantity': _quantity,
         'temp_option': _tempOption,
         'sugar_option': _sugarOption,
         'dine_option': _dineOption,
       });
+
+      final cartItems = await DatabaseHelper.instance.getCartWithDetails(userId: userId);
+      debugPrint('DetailScreen addToCart result: $result, cart items count: ${cartItems.length}, cartItems: $cartItems');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

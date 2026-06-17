@@ -30,6 +30,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.5
   sqflite: ^2.4.2
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:
@@ -38,3 +39,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/

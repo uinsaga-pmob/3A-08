@@ -174,25 +174,9 @@ class _AddMenuScreenState extends State<AddMenuScreen> {
                         )
                       ],
                     ),
-                    const Divider(color: Color(0xFFD2B48C), height: 12),
-                    Text(
-                      'FORMULIR INPUT DATA PRODUK & KOORDINAT GAMBAR',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Pastikan isian sesuai dengan struktur SQLite Tabel "menu_items". Input field kini mendukung path dari File Explorer Handphone.',
-                      style: TextStyle(color: Colors.grey, fontSize: 11, fontStyle: FontStyle.italic),
-                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
 
               // --- CAROUSEL PREVIEW BARU (REAL-TIME UPDATES) ---
               Container(

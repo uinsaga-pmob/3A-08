@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/database_helper.dart';
 import 'success_screen.dart';
 
@@ -34,7 +35,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('user_id');
+      if (userId == null) {
+        throw StateError('Pengguna belum masuk');
+      }
+
       final orderId = await DatabaseHelper.instance.placeOrder(
+        userId,
         tableNum,
         _selectedPayment,
         widget.totalAmount,

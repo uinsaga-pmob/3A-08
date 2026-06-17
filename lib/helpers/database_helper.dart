@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
@@ -17,12 +19,37 @@ class DatabaseHelper {
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
+    debugPrint('SQLite DB path: $path');
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 4, // ← naik dari 3 ke 4
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
+  }
+
+  Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE cart_items ADD COLUMN user_id INTEGER');
+      await db.execute('ALTER TABLE orders ADD COLUMN user_id INTEGER');
+    }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE user_favorites (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          menu_id INTEGER NOT NULL,
+          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+          FOREIGN KEY (menu_id) REFERENCES menu_items (id) ON DELETE CASCADE
+        )
+      ''');
+    }
+    if (oldVersion < 4) {
+      // ← TAMBAHAN BARU: kolom photo
+      await db.execute('ALTER TABLE users ADD COLUMN photo TEXT');
+      debugPrint('Migration v4: kolom photo berhasil ditambahkan');
+    }
   }
 
   Future _createDB(Database db, int version) async {
@@ -42,7 +69,8 @@ class DatabaseHelper {
         phone $textNullableType,
         dob $textNullableType,
         city $textNullableType,
-        address $textNullableType
+        address $textNullableType,
+        photo $textNullableType
       )
     ''');
 
@@ -63,28 +91,42 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE cart_items (
         id $idType,
+        user_id INTEGER,
         menu_id $integerType,
         quantity $integerType,
-        temp_option $textType, -- 'Ice' or 'Hot'
-        sugar_option $textType, -- 'Less', 'Normal', 'Extra'
-        dine_option $textType, -- 'Dine In' or 'Take Away'
-        FOREIGN KEY (menu_id) REFERENCES menu_items (id) ON DELETE CASCADE
+        temp_option $textType,
+        sugar_option $textType,
+        dine_option $textType,
+        FOREIGN KEY (menu_id) REFERENCES menu_items (id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
       )
     ''');
 
-    // Orders/History Table
+    // User Favorites Table
+    await db.execute('''
+      CREATE TABLE user_favorites (
+        id $idType,
+        user_id INTEGER NOT NULL,
+        menu_id INTEGER NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (menu_id) REFERENCES menu_items (id) ON DELETE CASCADE,
+        UNIQUE(user_id, menu_id)
+      )
+    ''');
+
+    // Orders Table
     await db.execute('''
       CREATE TABLE orders (
         id $idType,
+        user_id INTEGER,
         table_number $textType,
         payment_method $textType,
         total_price $doubleType,
         order_time $textType,
-        items_summary $textType -- Store structured text / JSON of items ordered
+        items_summary $textType
       )
     ''');
 
-    // Seed default menu items
     await _seedMenu(db);
   }
 
@@ -94,7 +136,8 @@ class DatabaseHelper {
         'name': 'Kopi Sruput Good Day Mocacino',
         'category': 'Coffee',
         'price': 6000.0,
-        'description': 'Kopi instan 3-in-1 Good Day rasa Mocacinno disajikan dingin dengan es batu segar.',
+        'description':
+            'Kopi instan 3-in-1 Good Day rasa Mocacinno disajikan dingin dengan es batu segar.',
         'image_path': 'good_day_mocacino',
         'is_favorite': 1
       },
@@ -102,7 +145,8 @@ class DatabaseHelper {
         'name': 'Kopi Sruput Nescafe Classic',
         'category': 'Coffee',
         'price': 6000.0,
-        'description': 'Kopi hitam murni berkualitas Nescafe Classic dengan sensasi rasa pekat.',
+        'description':
+            'Kopi hitam murni berkualitas Nescafe Classic dengan sensasi rasa pekat.',
         'image_path': 'nescafe_classic',
         'is_favorite': 0
       },
@@ -110,7 +154,8 @@ class DatabaseHelper {
         'name': 'Kopi Sruput ABC Kopi Susu',
         'category': 'Coffee',
         'price': 6000.0,
-        'description': 'Racikan kopi susu legendaris dari Kopi ABC, mantap diseruput kapan saja.',
+        'description':
+            'Racikan kopi susu legendaris dari Kopi ABC, mantap diseruput kapan saja.',
         'image_path': 'abc_kopi_susu',
         'is_favorite': 0
       },
@@ -118,7 +163,8 @@ class DatabaseHelper {
         'name': 'Sruput Chocolatos Matcha',
         'category': 'Non Coffee',
         'price': 6000.0,
-        'description': 'Minuman bubuk Matcha green tea manis dari Chocolatos, creamy dan segar.',
+        'description':
+            'Minuman bubuk Matcha green tea manis dari Chocolatos, creamy dan segar.',
         'image_path': 'chocolatos_matcha',
         'is_favorite': 1
       },
@@ -126,7 +172,8 @@ class DatabaseHelper {
         'name': 'Sruput Chocolatos Choco',
         'category': 'Non Coffee',
         'price': 6000.0,
-        'description': 'Cokelat Italia premium yang tebal dan manis khas Chocolatos, disajikan dengan es.',
+        'description':
+            'Cokelat Italia premium yang tebal dan manis khas Chocolatos, disajikan dengan es.',
         'image_path': 'chocolatos_choco',
         'is_favorite': 0
       },
@@ -134,7 +181,8 @@ class DatabaseHelper {
         'name': 'Sruput Energi Beng-Beng',
         'category': 'Non Coffee',
         'price': 6000.0,
-        'description': 'Sajian dingin dari Drink Beng-Beng cokelat berenergi yang nikmat luar biasa.',
+        'description':
+            'Sajian dingin dari Drink Beng-Beng cokelat berenergi yang nikmat luar biasa.',
         'image_path': 'drink_beng_beng',
         'is_favorite': 0
       }
@@ -151,25 +199,24 @@ class DatabaseHelper {
     try {
       return await db.insert('users', userRow);
     } catch (e) {
-      return -1; // Username conflict or failure
+      return -1;
     }
   }
 
-  Future<Map<String, dynamic>?> loginUser(String username, String password) async {
+  Future<Map<String, dynamic>?> loginUser(
+      String username, String password) async {
     final db = await instance.database;
     final maps = await db.query(
       'users',
       where: 'username = ? AND password = ?',
       whereArgs: [username, password],
     );
-
-    if (maps.isNotEmpty) {
-      return maps.first;
-    }
+    if (maps.isNotEmpty) return maps.first;
     return null;
   }
 
-  Future<int> updateUserProfile(int userId, Map<String, dynamic> userRow) async {
+  Future<int> updateUserProfile(
+      int userId, Map<String, dynamic> userRow) async {
     final db = await instance.database;
     return await db.update(
       'users',
@@ -191,27 +238,35 @@ class DatabaseHelper {
   }
 
   // --- MENU OPERATIONS ---
-  Future<List<Map<String, dynamic>>> getMenuItems({String? category, String? query}) async {
+  Future<int?> _currentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('user_id');
+  }
+
+  Future<List<Map<String, dynamic>>> getMenuItems(
+      {String? category, String? query}) async {
     final db = await instance.database;
-    String whereClause = '';
-    List<dynamic> whereArgs = [];
+    final userId = await _currentUserId();
+    final queryBuffer = StringBuffer('''
+      SELECT menu_items.*,
+        CASE WHEN user_favorites.id IS NOT NULL THEN 1 ELSE 0 END AS is_favorite
+      FROM menu_items
+      LEFT JOIN user_favorites ON menu_items.id = user_favorites.menu_id AND user_favorites.user_id = ?
+    ''');
+    final whereArgs = <dynamic>[userId];
 
     if (category != null) {
-      whereClause += 'category = ?';
+      queryBuffer.write(' WHERE category = ?');
       whereArgs.add(category);
     }
 
     if (query != null && query.isNotEmpty) {
-      if (whereClause.isNotEmpty) whereClause += ' AND ';
-      whereClause += 'name LIKE ?';
+      queryBuffer.write(whereArgs.length > 1 ? ' AND ' : ' WHERE ');
+      queryBuffer.write('name LIKE ?');
       whereArgs.add('%$query%');
     }
 
-    if (whereClause.isNotEmpty) {
-      return await db.query('menu_items', where: whereClause, whereArgs: whereArgs);
-    } else {
-      return await db.query('menu_items');
-    }
+    return await db.rawQuery(queryBuffer.toString(), whereArgs);
   }
 
   Future<int> insertMenuItem(Map<String, dynamic> menuItem) async {
@@ -221,36 +276,70 @@ class DatabaseHelper {
 
   Future<int> toggleFavorite(int menuId, bool currentFavorite) async {
     final db = await instance.database;
-    return await db.update(
-      'menu_items',
-      {'is_favorite': currentFavorite ? 0 : 1},
-      where: 'id = ?',
-      whereArgs: [menuId],
-    );
+    final userId = await _currentUserId();
+    if (userId == null) throw StateError('Pengguna belum masuk');
+
+    if (currentFavorite) {
+      return await db.delete(
+        'user_favorites',
+        where: 'user_id = ? AND menu_id = ?',
+        whereArgs: [userId, menuId],
+      );
+    }
+
+    return await db.insert('user_favorites', {
+      'user_id': userId,
+      'menu_id': menuId,
+    });
   }
 
   Future<List<Map<String, dynamic>>> getFavorites() async {
     final db = await instance.database;
-    return await db.query('menu_items', where: 'is_favorite = ?', whereArgs: [1]);
+    final userId = await _currentUserId();
+    if (userId == null) return [];
+
+    return await db.rawQuery('''
+      SELECT menu_items.*, 1 AS is_favorite
+      FROM menu_items
+      INNER JOIN user_favorites ON menu_items.id = user_favorites.menu_id
+      WHERE user_favorites.user_id = ?
+    ''', [userId]);
   }
 
   // --- CART OPERATIONS ---
-  Future<List<Map<String, dynamic>>> getCartWithDetails() async {
+  Future<List<Map<String, dynamic>>> getCartWithDetails({int? userId}) async {
     final db = await instance.database;
-    return await db.rawQuery('''
+    final query = StringBuffer('''
       SELECT cart_items.*, menu_items.name, menu_items.price, menu_items.image_path, menu_items.category
       FROM cart_items
       INNER JOIN menu_items ON cart_items.menu_id = menu_items.id
     ''');
+    final args = <dynamic>[];
+
+    if (userId != null) {
+      query.write(' WHERE cart_items.user_id = ?');
+      args.add(userId);
+    }
+
+    return await db.rawQuery(query.toString(), args);
   }
 
   Future<int> addToCart(Map<String, dynamic> cartRow) async {
     final db = await instance.database;
-    // Check if the exact item with same options already exists:
+    if (cartRow['user_id'] == null)
+      throw ArgumentError('user_id cannot be null');
+    if (cartRow['menu_id'] == null)
+      throw ArgumentError('menu_id cannot be null');
+    final quantity = cartRow['quantity'] as int?;
+    if (quantity == null || quantity <= 0)
+      throw ArgumentError('quantity must be positive');
+
     final existing = await db.query(
       'cart_items',
-      where: 'menu_id = ? AND temp_option = ? AND sugar_option = ? AND dine_option = ?',
+      where:
+          'user_id = ? AND menu_id = ? AND temp_option = ? AND sugar_option = ? AND dine_option = ?',
       whereArgs: [
+        cartRow['user_id'],
         cartRow['menu_id'],
         cartRow['temp_option'],
         cartRow['sugar_option'],
@@ -260,14 +349,9 @@ class DatabaseHelper {
 
     if (existing.isNotEmpty) {
       int id = existing.first['id'] as int;
-      int oldQty = existing.first['quantity'] as int;
-      int newQty = oldQty + (cartRow['quantity'] as int);
-      return await db.update(
-        'cart_items',
-        {'quantity': newQty},
-        where: 'id = ?',
-        whereArgs: [id],
-      );
+      int newQty = (existing.first['quantity'] as int) + quantity;
+      return await db.update('cart_items', {'quantity': newQty},
+          where: 'id = ?', whereArgs: [id]);
     } else {
       return await db.insert('cart_items', cartRow);
     }
@@ -276,35 +360,35 @@ class DatabaseHelper {
   Future<int> updateCartQuantity(int cartId, int quantity) async {
     final db = await instance.database;
     if (quantity <= 0) {
-      return await db.delete('cart_items', where: 'id = ?', whereArgs: [cartId]);
+      return await db
+          .delete('cart_items', where: 'id = ?', whereArgs: [cartId]);
     }
-    return await db.update(
-      'cart_items',
-      {'quantity': quantity},
-      where: 'id = ?',
-      whereArgs: [cartId],
-    );
+    return await db.update('cart_items', {'quantity': quantity},
+        where: 'id = ?', whereArgs: [cartId]);
   }
 
-  Future<int> clearCart() async {
+  Future<int> clearCart({int? userId}) async {
     final db = await instance.database;
+    if (userId != null) {
+      return await db
+          .delete('cart_items', where: 'user_id = ?', whereArgs: [userId]);
+    }
     return await db.delete('cart_items');
   }
 
   // --- ORDER OPERATIONS ---
-  Future<int> placeOrder(String tableNumber, String paymentMethod, double totalPrice) async {
+  Future<int> placeOrder(int userId, String tableNumber, String paymentMethod,
+      double totalPrice) async {
     final db = await instance.database;
-    
-    // Fetch current cart items to create a summary
-    final cartItems = await getCartWithDetails();
+    final cartItems = await getCartWithDetails(userId: userId);
     if (cartItems.isEmpty) return -1;
 
     String summary = cartItems.map((item) {
       return "${item['name']} (${item['quantity']}x) - ${item['temp_option']}, Sugar: ${item['sugar_option']}, ${item['dine_option']}";
     }).join('\n');
 
-    // Create Order Row
     final orderId = await db.insert('orders', {
+      'user_id': userId,
       'table_number': tableNumber,
       'payment_method': paymentMethod,
       'total_price': totalPrice,
@@ -312,20 +396,21 @@ class DatabaseHelper {
       'items_summary': summary
     });
 
-    // Clear the cart
-    await clearCart();
+    await clearCart(userId: userId);
     return orderId;
   }
 
-  Future<List<Map<String, dynamic>>> getOrderHistory() async {
+  Future<List<Map<String, dynamic>>> getOrderHistory({int? userId}) async {
     final db = await instance.database;
+    if (userId != null) {
+      return await db.query('orders',
+          where: 'user_id = ?', whereArgs: [userId], orderBy: 'id DESC');
+    }
     return await db.query('orders', orderBy: 'id DESC');
   }
 
   Future close() async {
-    final db = await _database;
-    if (db != null) {
-      await db.close();
-    }
+    final db = _database;
+    if (db != null) await db.close();
   }
 }

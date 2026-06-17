@@ -1,3 +1,4 @@
+import 'dart:convert'; // ← TAMBAH
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/database_helper.dart';
@@ -16,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _displayName = 'Sruputer';
+  String? _photoBase64; // ← TAMBAH
   String _selectedCategory = 'Semua';
   List<MenuItem> _menuItems = [];
   bool _isLoading = true;
@@ -30,18 +32,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString('user_name');
+    final userId = prefs.getInt('user_id');
+
     if (name != null && name.isNotEmpty) {
-      setState(() {
-        _displayName = name;
-      });
+      setState(() => _displayName = name);
+    }
+
+    // ← TAMBAH: ambil foto dari DB
+    if (userId != null) {
+      final user = await DatabaseHelper.instance.getUser(userId);
+      if (user != null && mounted) {
+        setState(() => _photoBase64 = user['photo']);
+      }
     }
   }
 
   Future<void> _loadMenu() async {
     setState(() => _isLoading = true);
     try {
-      final categoryFilter = _selectedCategory == 'Semua' ? null : _selectedCategory;
-      final rawList = await DatabaseHelper.instance.getMenuItems(category: categoryFilter);
+      final categoryFilter =
+          _selectedCategory == 'Semua' ? null : _selectedCategory;
+      final rawList =
+          await DatabaseHelper.instance.getMenuItems(category: categoryFilter);
       setState(() {
         _menuItems = rawList.map((m) => MenuItem.fromMap(m)).toList();
       });
@@ -60,6 +72,27 @@ class _HomeScreenState extends State<HomeScreen> {
     return 'Selamat Malam';
   }
 
+  // ← TAMBAH: widget avatar kecil untuk header
+  Widget _buildHeaderAvatar() {
+    final hasPhoto = _photoBase64 != null && _photoBase64!.isNotEmpty;
+    return CircleAvatar(
+      radius: 22,
+      backgroundColor: Colors.brown.shade200,
+      backgroundImage:
+          hasPhoto ? MemoryImage(base64Decode(_photoBase64!)) : null,
+      child: !hasPhoto
+          ? Text(
+              _displayName.substring(0, 1).toUpperCase(),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            )
+          : null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,48 +104,38 @@ class _HomeScreenState extends State<HomeScreen> {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              // Header
+              // ── Header ─────────────────────────────────────────
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // ← GANTI Column → Row
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _getGreeting(),
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
+                      // Greeting + Nama (kiri)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _getGreeting(),
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 14),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _displayName,
-                            style: TextStyle(
-                              color: Colors.brown.shade900,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                            const SizedBox(height: 4),
+                            Text(
+                              _displayName,
+                              style: TextStyle(
+                                color: Colors.brown.shade900,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.brown.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: Icon(Icons.notifications_none, color: Colors.brown.shade800),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Belum ada notifikasi baru.')),
-                            );
-                          },
-                        ),
-                      )
+                      // Avatar (kanan)
+                      _buildHeaderAvatar(),
                     ],
                   ),
                 ),
@@ -121,7 +144,8 @@ class _HomeScreenState extends State<HomeScreen> {
               // Search Bar Hero Card
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0, vertical: 12.0),
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -145,29 +169,29 @@ class _HomeScreenState extends State<HomeScreen> {
                         const Text(
                           'Promo Sruput Spesial!',
                           style: TextStyle(
-                            color: Colors.amber,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
+                              color: Colors.amber,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14),
                         ),
                         const SizedBox(height: 6),
                         const Text(
                           'Beli 3 Bayar 2 Kopi Instan Sruputan',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18),
                         ),
                         const SizedBox(height: 16),
                         GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const SearchScreen()),
+                              MaterialPageRoute(
+                                  builder: (_) => const SearchScreen()),
                             );
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(14),
@@ -178,7 +202,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 SizedBox(width: 12),
                                 Text(
                                   'Cari kopi andalanmu di sini...',
-                                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                                  style: TextStyle(
+                                      color: Colors.grey, fontSize: 14),
                                 )
                               ],
                             ),
@@ -206,7 +231,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           label: Text(
                             category,
                             style: TextStyle(
-                              color: isSelected ? Colors.white : Colors.brown.shade800,
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.brown.shade800,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -217,14 +244,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                             side: BorderSide(
-                              color: isSelected ? Colors.transparent : Colors.brown.shade200,
+                              color: isSelected
+                                  ? Colors.transparent
+                                  : Colors.brown.shade200,
                             ),
                           ),
                           onSelected: (selected) {
                             if (selected) {
-                              setState(() {
-                                _selectedCategory = category;
-                              });
+                              setState(() => _selectedCategory = category);
                               _loadMenu();
                             }
                           },
@@ -238,31 +265,31 @@ class _HomeScreenState extends State<HomeScreen> {
               // Section Header
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0, vertical: 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Pilihan Menu Terbaik',
                         style: TextStyle(
-                          color: Colors.brown.shade900,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                            color: Colors.brown.shade900,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
                       ),
                       TextButton(
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => const SeeAllScreen()),
+                            MaterialPageRoute(
+                                builder: (_) => const SeeAllScreen()),
                           ).then((value) => _loadMenu());
                         },
                         child: Text(
                           'Lihat Semua',
                           style: TextStyle(
-                            color: Colors.amber.shade900,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              color: Colors.amber.shade900,
+                              fontWeight: FontWeight.bold),
                         ),
                       )
                     ],
@@ -274,8 +301,8 @@ class _HomeScreenState extends State<HomeScreen> {
               _isLoading
                   ? const SliverFillRemaining(
                       child: Center(
-                        child: CircularProgressIndicator(color: Colors.brown),
-                      ),
+                          child:
+                              CircularProgressIndicator(color: Colors.brown)),
                     )
                   : _menuItems.isEmpty
                       ? SliverFillRemaining(
@@ -283,12 +310,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.coffee, size: 64, color: Colors.brown.shade200),
+                                Icon(Icons.coffee,
+                                    size: 64, color: Colors.brown.shade200),
                                 const SizedBox(height: 12),
-                                const Text(
-                                  'Belum ada menu di kategori ini.',
-                                  style: TextStyle(color: Colors.grey),
-                                ),
+                                const Text('Belum ada menu di kategori ini.',
+                                    style: TextStyle(color: Colors.grey)),
                               ],
                             ),
                           ),
@@ -296,7 +322,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       : SliverPadding(
                           padding: const EdgeInsets.symmetric(horizontal: 20.0),
                           sliver: SliverGrid(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               childAspectRatio: 0.76,
                               crossAxisSpacing: 16,
@@ -311,12 +338,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => DetailScreen(item: item),
-                                      ),
+                                          builder: (_) =>
+                                              DetailScreen(item: item)),
                                     ).then((value) => _loadMenu());
                                   },
                                   onFavoriteTap: () async {
-                                    await DatabaseHelper.instance.toggleFavorite(item.id!, item.isFavorite);
+                                    await DatabaseHelper.instance
+                                        .toggleFavorite(
+                                            item.id!, item.isFavorite);
                                     _loadMenu();
                                   },
                                 );

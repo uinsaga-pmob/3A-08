@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/database_helper.dart';
@@ -15,8 +16,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String _name = 'Sruputer Setia';
   String _username = 'sruputer';
-  String _phone = '-';
-  String _address = '-';
+  String? _photoBase64; // ← TAMBAHAN
   bool _isLoading = true;
   List<Map<String, dynamic>> _orderHistory = [];
 
@@ -33,14 +33,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (userId != null) {
       final user = await DatabaseHelper.instance.getUser(userId);
-      final orders = await DatabaseHelper.instance.getOrderHistory();
+      final orders =
+          await DatabaseHelper.instance.getOrderHistory(userId: userId);
 
       if (user != null) {
         setState(() {
           _name = user['name'] ?? 'Sruputer Setia';
           _username = user['username'] ?? 'sruputer';
-          _phone = user['phone'] ?? 'Belum diatur';
-          _address = user['address'] ?? 'Belum diatur';
+          _photoBase64 = user['photo']; // ← TAMBAHAN
           _orderHistory = orders;
         });
       }
@@ -50,6 +50,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _logout() async {
     final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('user_id');
+    await DatabaseHelper.instance.clearCart(userId: userId);
     await prefs.clear();
 
     if (mounted) {
@@ -58,6 +60,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
         (route) => false,
       );
     }
+  }
+
+  // ← TAMBAHAN: widget avatar yang cek foto atau fallback inisial
+  Widget _buildAvatar() {
+    final hasPhoto = _photoBase64 != null && _photoBase64!.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.brown.shade300, width: 2),
+      ),
+      child: CircleAvatar(
+        radius: 40,
+        backgroundColor: Colors.brown.shade100,
+        backgroundImage:
+            hasPhoto ? MemoryImage(base64Decode(_photoBase64!)) : null,
+        child: !hasPhoto
+            ? Text(
+                _name.substring(0, 1).toUpperCase(),
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.brown.shade800,
+                ),
+              )
+            : null,
+      ),
+    );
   }
 
   @override
@@ -80,30 +111,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // User info header
                   Card(
                     color: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Column(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.brown.shade300, width: 2),
-                            ),
-                            child: CircleAvatar(
-                              radius: 40,
-                              backgroundColor: Colors.brown.shade100,
-                              child: Text(
-                                _name.substring(0, 1).toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.brown.shade800,
-                                ),
-                              ),
-                            ),
-                          ),
+                          _buildAvatar(), // ← GANTI dari Container lama ke ini
                           const SizedBox(height: 16),
                           Text(
                             _name,
@@ -116,7 +130,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(height: 4),
                           Text(
                             '@$_username',
-                            style: const TextStyle(color: Colors.grey, fontSize: 14),
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 14),
                           ),
                         ],
                       ),
@@ -126,42 +141,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   // Menu Actions list
                   Card(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     child: ListView(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
                         ListTile(
-                          leading: Icon(Icons.add_circle_outline, color: Colors.amber.shade900),
-                          title: const Text('Tambah Menu (Kustom Path)', style: TextStyle(fontWeight: FontWeight.w600)),
+                          leading: Icon(Icons.add_circle_outline,
+                              color: Colors.amber.shade900),
+                          title: const Text('Tambah Menu (Kustom Path)',
+                              style: TextStyle(fontWeight: FontWeight.w600)),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const AddMenuScreen()),
+                              MaterialPageRoute(
+                                  builder: (_) => const AddMenuScreen()),
                             ).then((value) {
-                              if (value == true) {
-                                _loadProfileData();
-                              }
+                              if (value == true) _loadProfileData();
                             });
                           },
                         ),
                         const Divider(height: 1),
                         ListTile(
-                          leading: Icon(Icons.settings_outlined, color: Colors.brown.shade800),
-                          title: const Text('Setelan Akun', style: TextStyle(fontWeight: FontWeight.w600)),
+                          leading: Icon(Icons.settings_outlined,
+                              color: Colors.brown.shade800),
+                          title: const Text('Setelan Akun',
+                              style: TextStyle(fontWeight: FontWeight.w600)),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                            ).then((value) => _loadProfileData());
+                              MaterialPageRoute(
+                                  builder: (_) => const SettingsScreen()),
+                            ).then((value) =>
+                                _loadProfileData()); // reload termasuk foto baru
                           },
                         ),
                         const Divider(height: 1),
                         ListTile(
-                          leading: const Icon(Icons.logout, color: Colors.redAccent),
-                          title: const Text('Keluar dari Akun', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                          leading:
+                              const Icon(Icons.logout, color: Colors.redAccent),
+                          title: const Text('Keluar dari Akun',
+                              style: TextStyle(
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.bold)),
                           onTap: _logout,
                         ),
                       ],
@@ -189,7 +214,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Order history list
                   _orderHistory.isEmpty
                       ? Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
                           child: const Padding(
                             padding: EdgeInsets.all(24.0),
                             child: Center(
@@ -206,9 +232,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           itemCount: _orderHistory.length,
                           itemBuilder: (context, index) {
                             final order = _orderHistory[index];
-                            final double total = (order['total_price'] as num).toDouble();
+                            final double total =
+                                (order['total_price'] as num).toDouble();
                             final time = order['order_time'] != null
-                                ? DateTime.tryParse(order['order_time'])?.toLocal()
+                                ? DateTime.tryParse(order['order_time'])
+                                    ?.toLocal()
                                 : null;
                             final dateStr = time != null
                                 ? '${time.day}/${time.month}/${time.year} ${time.hour}:${time.minute.toString().padLeft(2, '0')}'
@@ -216,20 +244,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                             return Card(
                               margin: const EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14)),
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 4),
                                           decoration: BoxDecoration(
                                             color: Colors.brown.shade50,
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                           child: Text(
                                             'Meja ${order['table_number']}',
@@ -242,22 +274,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                         Text(
                                           dateStr,
-                                          style: const TextStyle(color: Colors.grey, fontSize: 11),
+                                          style: const TextStyle(
+                                              color: Colors.grey, fontSize: 11),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
                                       order['items_summary'] ?? '',
-                                      style: TextStyle(color: Colors.grey.shade800, fontSize: 13, height: 1.4),
+                                      style: TextStyle(
+                                          color: Colors.grey.shade800,
+                                          fontSize: 13,
+                                          height: 1.4),
                                     ),
                                     const Divider(height: 20),
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           'Bayar via: ${order['payment_method']}',
-                                          style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                                          style: TextStyle(
+                                              color: Colors.grey.shade600,
+                                              fontSize: 12),
                                         ),
                                         Text(
                                           'Rp ${total.toStringAsFixed(0)}',
@@ -266,7 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             fontWeight: FontWeight.bold,
                                             fontSize: 15,
                                           ),
-                                        )
+                                        ),
                                       ],
                                     ),
                                   ],
