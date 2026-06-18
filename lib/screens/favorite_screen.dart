@@ -22,16 +22,24 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   }
 
   Future<void> _loadFavorites() async {
+    if (!mounted) return;
+
     setState(() => _isLoading = true);
+
     try {
       final rawList = await DatabaseHelper.instance.getFavorites();
+
+      if (!mounted) return;
+
       setState(() {
         _favorites = rawList.map((m) => MenuItem.fromMap(m)).toList();
       });
     } catch (e) {
       debugPrint('Error loading favorites: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -46,27 +54,50 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
         elevation: 0,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.brown))
+          ? const Center(
+              child: CircularProgressIndicator(
+                color: Colors.brown,
+              ),
+            )
           : _favorites.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+              ? RefreshIndicator(
+                  onRefresh: _loadFavorites,
+                  color: Colors.brown,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     children: [
-                      Icon(Icons.favorite_outline, size: 64, color: Colors.brown.shade200),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Belum ada menu favorit.',
-                        style: TextStyle(
-                          color: Colors.brown.shade800,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.7,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.favorite_outline,
+                                size: 64,
+                                color: Colors.brown.shade200,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum ada menu favorit.',
+                                style: TextStyle(
+                                  color: Colors.brown.shade800,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Tarik ke bawah untuk refresh.\nTekan ikon hati pada menu untuk menambahkan favorit.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Tekan icon hati pada menu untuk menambahkan.',
-                        style: TextStyle(color: Colors.grey, fontSize: 13),
-                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
@@ -75,8 +106,10 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                   onRefresh: _loadFavorites,
                   color: Colors.brown,
                   child: GridView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(20),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       childAspectRatio: 0.76,
                       crossAxisSpacing: 16,
@@ -85,6 +118,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                     itemCount: _favorites.length,
                     itemBuilder: (context, index) {
                       final item = _favorites[index];
+
                       return ProductCard(
                         item: item,
                         onTap: () {
@@ -93,11 +127,15 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                             MaterialPageRoute(
                               builder: (_) => DetailScreen(item: item),
                             ),
-                          ).then((value) => _loadFavorites());
+                          ).then((_) => _loadFavorites());
                         },
                         onFavoriteTap: () async {
-                          await DatabaseHelper.instance.toggleFavorite(item.id!, item.isFavorite);
-                          _loadFavorites();
+                          await DatabaseHelper.instance.toggleFavorite(
+                            item.id!,
+                            item.isFavorite,
+                          );
+
+                          await _loadFavorites();
                         },
                       );
                     },

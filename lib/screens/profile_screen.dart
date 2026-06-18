@@ -150,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ListTile(
                           leading: Icon(Icons.add_circle_outline,
                               color: Colors.amber.shade900),
-                          title: const Text('Tambah Menu (Kustom Path)',
+                          title: const Text('Tambah Menu (Kustom)',
                               style: TextStyle(fontWeight: FontWeight.w600)),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () {

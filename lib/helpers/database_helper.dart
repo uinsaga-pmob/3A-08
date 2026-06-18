@@ -83,6 +83,7 @@ class DatabaseHelper {
         price $doubleType,
         description $textType,
         image_path $textNullableType,
+        image_url $textNullableType,
         is_favorite $integerType
       )
     ''');
@@ -139,7 +140,9 @@ class DatabaseHelper {
         'description':
             'Kopi instan 3-in-1 Good Day rasa Mocacinno disajikan dingin dengan es batu segar.',
         'image_path': 'good_day_mocacino',
-        'is_favorite': 1
+        'is_favorite': 1,
+        'image_url':
+            'https://id-live-01.slatic.net/p/60c80838ea24bb139229da0e468ab652.jpg',
       },
       {
         'name': 'Kopi Sruput Nescafe Classic',
@@ -148,7 +151,9 @@ class DatabaseHelper {
         'description':
             'Kopi hitam murni berkualitas Nescafe Classic dengan sensasi rasa pekat.',
         'image_path': 'nescafe_classic',
-        'is_favorite': 0
+        'image_url':
+            'https://i.ytimg.com/vi/SSOqewxGSs4/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDuDWpYCs59WiI5_YxYiCuYNIHG-w',
+        'is_favorite': 0,
       },
       {
         'name': 'Kopi Sruput ABC Kopi Susu',
@@ -157,6 +162,7 @@ class DatabaseHelper {
         'description':
             'Racikan kopi susu legendaris dari Kopi ABC, mantap diseruput kapan saja.',
         'image_path': 'abc_kopi_susu',
+        'image_url': 'https://example.com/images/abc_kopi_susu.jpg',
         'is_favorite': 0
       },
       {
@@ -166,6 +172,7 @@ class DatabaseHelper {
         'description':
             'Minuman bubuk Matcha green tea manis dari Chocolatos, creamy dan segar.',
         'image_path': 'chocolatos_matcha',
+        'image_url': 'https://example.com/images/chocolatos_matcha.jpg',
         'is_favorite': 1
       },
       {
@@ -175,6 +182,7 @@ class DatabaseHelper {
         'description':
             'Cokelat Italia premium yang tebal dan manis khas Chocolatos, disajikan dengan es.',
         'image_path': 'chocolatos_choco',
+        'image_url': 'https://example.com/images/chocolatos_choco.jpg',
         'is_favorite': 0
       },
       {
@@ -184,6 +192,7 @@ class DatabaseHelper {
         'description':
             'Sajian dingin dari Drink Beng-Beng cokelat berenergi yang nikmat luar biasa.',
         'image_path': 'drink_beng_beng',
+        'image_url': 'https://example.com/images/drink_beng_beng.jpg',
         'is_favorite': 0
       }
     ];

@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.brown.withOpacity(0.2),
+                          color: const Color(0xFF795548).withOpacity(0.2),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         )
@@ -167,19 +167,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Promo Sruput Spesial!',
+                          'Grab Sruput Spesial!',
                           style: TextStyle(
                               color: Colors.amber,
                               fontWeight: FontWeight.bold,
-                              fontSize: 14),
+                              fontSize: 20),
                         ),
                         const SizedBox(height: 6),
                         const Text(
-                          'Beli 3 Bayar 2 Kopi Instan Sruputan',
+                          'Warning: Menu di sini bikin susah move on.',
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 18),
+                              fontSize: 15),
                         ),
                         const SizedBox(height: 16),
                         GestureDetector(
@@ -302,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ? const SliverFillRemaining(
                       child: Center(
                           child:
-                              CircularProgressIndicator(color: Colors.brown)),
+                              CircularProgressIndicator(color: Color(0xFF795548))),
                     )
                   : _menuItems.isEmpty
                       ? SliverFillRemaining(

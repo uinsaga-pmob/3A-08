@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'register_screen.dart';
 import 'main_navigation_shell.dart';
 import '../helpers/database_helper.dart';
-import '../widgets/cup_logo.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -28,10 +28,14 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text.trim();
 
     try {
-      final user = await DatabaseHelper.instance.loginUser(username, password);
+      final user = await DatabaseHelper.instance.loginUser(
+        username,
+        password,
+      );
 
       if (user != null) {
         final prefs = await SharedPreferences.getInstance();
+
         await prefs.setInt('user_id', user['id'] as int);
         await prefs.setString('user_name', user['name'] as String);
         await prefs.setString('username', user['username'] as String);
@@ -39,12 +43,17 @@ class _LoginScreenState extends State<LoginScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Selamat datang kembali, ${user['name']}!'),
+              content: Text(
+                'Selamat datang kembali, ${user['name']}!',
+              ),
               backgroundColor: Colors.green,
             ),
           );
+
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const MainNavigationShell()),
+            MaterialPageRoute(
+              builder: (_) => const MainNavigationShell(),
+            ),
             (route) => false,
           );
         }
@@ -75,11 +84,18 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Masuk'),
-        backgroundColor: Colors.brown.shade800,
+        backgroundColor: const Color(0xFF795548),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -89,11 +105,17 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Form(
             key: _formKey,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const CupLogo(size: 80, color: Colors.brown),
-                const SizedBox(height: 16),
+                Center(
+                  child: Image.asset(
+                    'assets/images/logocokk.png',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(height: 1),
                 Text(
                   'Kopi Sruput',
                   textAlign: TextAlign.center,
@@ -107,7 +129,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Text(
                   'Silakan masuk dengan akun Anda',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
                 ),
                 const SizedBox(height: 32),
                 TextFormField(
@@ -135,10 +159,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
                       onPressed: () {
-                        setState(() => _obscurePassword = !_obscurePassword);
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
                       },
                     ),
                     border: OutlineInputBorder(
@@ -156,9 +184,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.brown.shade800,
+                    backgroundColor: const Color(0xFF795548),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -169,23 +199,30 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : const Text(
                           'Masuk',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Belum punya akun? '),
+                    const Text('Belum punya akun?'),
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterScreen(),
+                          ),
                         );
                       },
                       child: Text(

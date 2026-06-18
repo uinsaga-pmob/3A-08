@@ -82,12 +82,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Daftar Akun'),
-        backgroundColor: Colors.brown.shade800,
+        backgroundColor: const Color(0xFF795548),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Center(
-        child: SingleChildScrollView(
+        child: SingleChildScrollView( 
           padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
@@ -189,7 +189,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.brown.shade800,
+                    backgroundColor: const Color(0xFF795548),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -202,12 +202,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Text(
                           'Daftar Sekarang',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                 ),
                 const SizedBox(height: 16),

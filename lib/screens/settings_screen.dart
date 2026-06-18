@@ -221,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: _removePhoto,
                 child: CircleAvatar(
                   radius: 13,
-                  backgroundColor: Colors.red.shade400,
+                  backgroundColor: const Color.fromARGB(255, 177, 4, 1),
                   child: const Icon(Icons.close, size: 14, color: Colors.white),
                 ),
               ),
@@ -324,16 +324,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       subtitle: 'Ganti kata sandi akun Anda',
                       onTap: _changePassword,
                     ),
-
-                    const SizedBox(height: 10),
-                    _securityTile(
-                      icon: Icons.delete_forever_outlined,
-                      title: 'Hapus Akun',
-                      subtitle: 'Hapus akun secara permanen',
-                      iconColor: Colors.red.shade700,
-                      onTap: () {},
-                    ),
-                    const SizedBox(height: 24),
                   ],
                 ),
               ),

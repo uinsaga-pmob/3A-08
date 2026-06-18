@@ -6,13 +6,13 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0E8), // krem seperti ss
       body: Column(
         children: [
-
           Expanded(
             flex: 5,
             child: Container(
@@ -22,7 +22,7 @@ class WelcomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'assets/images/logocok.png',
+                      'assets/images/logocokk.png',
                       width: 280,
                       height: 280,
                       fit: BoxFit.contain,
@@ -32,11 +32,10 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
           ),
-
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: const Color(0xFFBFAD95), // coklat muda seperti ss
+              color: const Color(0xFF795548), // coklat muda seperti ss
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(40),
                 topRight: Radius.circular(40),
@@ -75,7 +74,7 @@ class WelcomeScreen extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor:  Colors.brown.shade800,
+                    foregroundColor: Colors.brown.shade800,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
